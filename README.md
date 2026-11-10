@@ -7,10 +7,11 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 To start a local development server, run:
 
 ```bash
-ng serve
+dotnet dev-certs https --trust
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Trust the .NET development certificate once. On startup, `npm start` exports it to the ignored `.certs/` directory. Open `https://localhost:4100/`. To test shared sign-in, also start NetRoot on `https://localhost:4200/` and NetRootAuth in Development mode on `https://localhost:7116/`.
 
 ## Code scaffolding
 

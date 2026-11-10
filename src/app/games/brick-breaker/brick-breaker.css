@@ -1,0 +1,11 @@
+.game-action {
+  border-radius: 0.5rem;
+  background: #67e8f9;
+  color: #0f172a;
+  padding: 0.5rem 0.9rem;
+  font-weight: 600;
+}
+
+.game-action:hover {
+  background: #a5f3fc;
+}

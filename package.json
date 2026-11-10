@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "prestart": "dotnet dev-certs https --check --trust && node -e \"require('node:fs').mkdirSync('.certs', { recursive: true, mode: 0o700 })\" && dotnet dev-certs https --export-path .certs/localhost.pem --format PEM --no-password",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
@@ -17,6 +18,8 @@
     "@angular/forms": "^22.2.0",
     "@angular/platform-browser": "^22.2.0",
     "@angular/router": "^22.2.0",
+    "@angular/service-worker": "^22.2.0",
+    "phaser": "^4.2.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

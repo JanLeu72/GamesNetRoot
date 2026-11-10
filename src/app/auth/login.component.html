@@ -1,0 +1,45 @@
+<section class="mx-auto w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+  <h1 class="text-2xl font-semibold text-slate-900">Bei NetRoot Games anmelden</h1>
+  <p class="mt-2 text-sm text-slate-600">Melde dich mit deinem NetRoot-Konto an.</p>
+
+  <form class="mt-6 space-y-4" [formGroup]="form" (ngSubmit)="login()">
+    <div>
+      <label for="username" class="mb-1 block text-sm font-medium">Benutzername oder E-Mail-Adresse</label>
+      <input
+        id="username"
+        formControlName="username"
+        autocomplete="username"
+        required
+        [readOnly]="pending()"
+        class="w-full rounded-md border border-slate-300 px-3 py-2 focus-visible:outline-2 focus-visible:outline-sky-600"
+      />
+    </div>
+    <div>
+      <label for="password" class="mb-1 block text-sm font-medium">Passwort</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        autocomplete="current-password"
+        required
+        [readOnly]="pending()"
+        class="w-full rounded-md border border-slate-300 px-3 py-2 focus-visible:outline-2 focus-visible:outline-sky-600"
+      />
+    </div>
+    @if (error()) {
+      <p role="alert" class="text-sm text-red-700">{{ error() }}</p>
+    }
+    <button
+      type="submit"
+      class="w-full rounded-md bg-sky-700 px-4 py-2 font-medium text-white hover:bg-sky-800 disabled:opacity-60"
+      [disabled]="form.invalid || pending()"
+    >
+      {{ pending() ? 'Anmeldung läuft …' : 'Anmelden' }}
+    </button>
+  </form>
+
+  <div class="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+    <a class="text-sky-800 underline" href="https://www.netroot.ch/user/create">Konto erstellen</a>
+    <a class="text-sky-800 underline" href="https://www.netroot.ch/user/forgot-password">Passwort vergessen?</a>
+  </div>
+</section>
