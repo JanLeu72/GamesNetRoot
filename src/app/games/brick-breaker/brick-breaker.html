@@ -1,18 +1,22 @@
 <section class="mx-auto max-w-4xl">
   <a routerLink="/" class="text-sm font-medium text-sky-800 underline underline-offset-4">← Alle Spiele</a>
-  <header class="mt-4 rounded-2xl bg-slate-950 px-5 py-5 text-white sm:px-7">
-    <p class="text-xs font-semibold tracking-widest text-cyan-300 uppercase">NetRoot Arcade</p>
-    <h1 class="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">Brick Breaker</h1>
-    <p class="mt-2 text-sm text-slate-300">Fang den Ball mit dem Schläger und räume alle Steine ab.</p>
+  <header class="game-header mt-4 rounded-2xl px-5 py-5 sm:px-7">
+    <p class="text-xs font-semibold tracking-widest text-indigo-700 uppercase">NetRoot Arcade</p>
+    <h1 class="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Brick Breaker</h1>
+    <p class="mt-2 text-sm text-slate-700">Fang den Ball mit dem Schläger und räume alle Steine ab.</p>
   </header>
 
   @if (status(); as game) {
-    <dl class="my-3 grid grid-cols-4 gap-2 text-center text-sm">
+    <dl class="game-stats my-3 grid grid-cols-3 gap-2 text-center text-sm sm:grid-cols-5">
       <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">Level</dt><dd class="font-semibold">{{ level()?.level }}</dd></div>
       <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">Punkte</dt><dd class="font-semibold tabular-nums">{{ game.score }}</dd></div>
       <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">Leben</dt><dd class="font-semibold tabular-nums">{{ game.lives }}</dd></div>
       <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">Steine</dt><dd class="font-semibold tabular-nums">{{ game.remaining }}</dd></div>
+      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">Bestwert</dt><dd class="font-semibold tabular-nums">{{ bestScore() }}</dd></div>
     </dl>
+  }
+  @if (practice()) {
+    <p class="mt-3 text-sm text-slate-600">Übungsmodus. Dein Fortschritt wird hier nicht gespeichert.</p>
   }
 
   <div
@@ -21,7 +25,7 @@
     aria-label="Brick Breaker Spielfeld"
     aria-describedby="brick-breaker-controls"
     tabindex="0"
-    class="relative mt-3 overflow-hidden rounded-xl border border-slate-800 bg-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-600"
+    class="game-arena relative mt-3 overflow-hidden rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
     (keydown)="keyDown($event)"
     (keyup)="keyUp($event)"
     (blur)="clearKeys()"
@@ -34,9 +38,14 @@
       (pointermove)="movePaddle($event)"
     ></canvas>
 
-    @if (loading() || error() || (status() && status()?.phase !== 'playing')) {
-      <div class="pointer-events-none absolute inset-0 grid place-items-center bg-slate-950/55 p-3 text-center text-white">
-        <div class="max-w-sm rounded-xl border border-white/15 bg-slate-950/90 px-4 py-4 sm:px-7">
+    @if (countdown(); as number) {
+      <div class="pointer-events-none absolute inset-0 grid place-items-center">
+        <span aria-hidden="true" class="game-countdown tabular-nums">{{ number }}</span>
+        <span class="sr-only" role="status">Ball startet in {{ number }} Sekunden.</span>
+      </div>
+    } @else if (loading() || error() || (status() && status()?.phase !== 'playing')) {
+      <div class="pointer-events-none absolute inset-0 grid place-items-center bg-indigo-950/20 p-3 text-center">
+        <div class="game-dialog max-w-sm rounded-2xl px-4 py-4 sm:px-7">
           @if (loading()) {
             <p role="status" class="text-lg font-semibold">Level wird geladen …</p>
           } @else if (error() === 'level') {
@@ -47,20 +56,27 @@
           } @else if (status(); as game) {
             <p role="status" class="text-xl font-semibold">
               @switch (game.phase) {
-                @case ('won') { Level geschafft! }
+                @case ('won') { {{ level()?.hasNext ? 'Level geschafft!' : 'Letztes Level geschafft!' }} }
                 @case ('lost') { Spiel vorbei }
                 @case ('paused') { Pause }
                 @default { {{ game.lives === level()?.lives ? 'Bereit für Level ' + level()?.level + '?' : 'Bereit für den nächsten Ball?' }} }
               }
             </p>
-            <button type="button" class="game-action pointer-events-auto mt-3" (click)="start()">
-              @switch (game.phase) {
-                @case ('won') { Noch einmal spielen }
-                @case ('lost') { Noch einmal spielen }
-                @case ('paused') { Weiterspielen }
-                @default { Ball starten }
-              }
-            </button>
+            @if (saveState() === 'saving') {
+              <p role="status" class="mt-3">Fortschritt wird gespeichert …</p>
+            } @else if (saveState() === 'failed') {
+              <p role="alert" class="mt-3">Der Fortschritt konnte nicht gespeichert werden.</p>
+              <button type="button" class="game-action pointer-events-auto mt-3" (click)="saveResult()">Erneut speichern</button>
+            } @else {
+              <button type="button" class="game-action pointer-events-auto mt-3" (click)="start()">
+                @switch (game.phase) {
+                  @case ('won') { {{ level()?.hasNext ? 'Nächstes Level' : 'Level wiederholen' }} }
+                  @case ('lost') { Noch einmal spielen }
+                  @case ('paused') { Weiterspielen }
+                  @default { Ball starten }
+                }
+              </button>
+            }
           }
         </div>
       </div>

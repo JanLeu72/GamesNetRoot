@@ -1,11 +1,52 @@
+.game-header {
+  background: linear-gradient(112deg, #edf1ff, #e3f8ff 60%, #fff1dc);
+  color: #242653;
+  border: 1px solid #dce5f8;
+}
+
+.game-stats > div {
+  border: 1px solid #e0e8fa;
+  background: linear-gradient(#fff, #f0f5ff);
+  box-shadow: 0 2px 4px #2e43850a;
+}
+
+.game-arena {
+  border: 1px solid #30417b;
+  background: #212c65;
+  box-shadow: 0 4px 0 #252e60, 0 12px 22px #272f692c;
+}
+
+.game-dialog {
+  color: #242653;
+  background: #f6f8ff;
+  border: 1px solid #fff;
+  box-shadow: 0 4px 0 #bcc8ef, 0 12px 28px #1719405c;
+}
+
+.game-countdown {
+  display: grid;
+  place-items: center;
+  width: clamp(4rem, 13vw, 7rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: linear-gradient(#fff9ec, #dcdcff);
+  color: #352b87;
+  font-size: clamp(2.5rem, 7vw, 4.75rem);
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 5px 0 #7774bc, 0 12px 32px #191b5059;
+}
+
 .game-action {
   border-radius: 0.5rem;
-  background: #67e8f9;
-  color: #0f172a;
+  background: linear-gradient(#6259e2, #4840bb);
+  color: #fff;
+  box-shadow: 0 2px 0 #332c91;
   padding: 0.5rem 0.9rem;
   font-weight: 600;
 }
 
 .game-action:hover {
-  background: #a5f3fc;
+  background: linear-gradient(#574fd5, #3d35ae);
 }

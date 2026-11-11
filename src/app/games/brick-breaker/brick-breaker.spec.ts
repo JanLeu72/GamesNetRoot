@@ -10,10 +10,12 @@ import { BrickBreakerLevel, GameStatus, loadBrickBreakerGame } from './brick-bre
 
 const level = { level: 1, rows: 4, columns: 8, lives: 3 };
 const url = environment.netRootApi + 'brick-breaker/level';
+const resultUrl = environment.netRootApi + 'brick-breaker/result';
 
 describe('BrickBreaker', () => {
   let fixture: ComponentFixture<BrickBreaker>;
   let http: HttpTestingController;
+  let winLevel: () => void;
   const destroyGame = vi.fn();
 
   beforeEach(() => {
@@ -34,9 +36,10 @@ describe('BrickBreaker', () => {
             onStatus: (status: GameStatus) => void,
           ) => {
             const publish = (phase: GameStatus['phase']) => onStatus({
-              phase, score: 0, lives: level.lives, remaining: level.rows * level.columns,
+              phase, score: phase === 'won' ? 3200 : 0, lives: level.lives, remaining: level.rows * level.columns,
             });
             publish('ready');
+            winLevel = () => publish('won');
             return {
               start: () => publish('playing'),
               pause: () => publish('paused'),
@@ -54,7 +57,7 @@ describe('BrickBreaker', () => {
 
   afterEach(() => http.verify());
 
-  it('loads the level with a bearer token and lets the player start and pause', async () => {
+  it('counts down before launching the ball and lets the player pause', async () => {
     const request = http.expectOne({ method: 'GET', url });
     expect(request.request.headers.get('Authorization')).toBe('Bearer test-token');
     request.flush(level);
@@ -62,8 +65,19 @@ describe('BrickBreaker', () => {
     fixture.detectChanges();
 
     const view: HTMLElement = fixture.nativeElement;
-    expect(Array.from(view.querySelectorAll('dd'), (stat) => stat.textContent)).toEqual(['1', '0', '3', '32']);
-    view.querySelector('button')!.click();
+    expect(Array.from(view.querySelectorAll('dd'), (stat) => stat.textContent)).toEqual(['1', '0', '3', '32', '0']);
+    vi.useFakeTimers();
+    try {
+      view.querySelector('button')!.click();
+      for (const number of [3, 2, 1]) {
+        fixture.detectChanges();
+        expect(view.querySelector('.game-countdown')?.textContent).toBe(String(number));
+        expect(view.querySelector('button')).toBeNull();
+        vi.advanceTimersByTime(1000);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
     fixture.detectChanges();
     expect(view.querySelector('button')?.textContent).toContain('Pausieren');
     view.querySelector('button')!.click();
@@ -88,5 +102,50 @@ describe('BrickBreaker', () => {
     await fixture.whenStable();
     fixture.destroy();
     expect(destroyGame).toHaveBeenCalledOnce();
+  });
+
+  it('loads the next level after a win and retries the same level on failure', async () => {
+    http.expectOne(url).flush({ ...level, hasNext: true });
+    await fixture.whenStable();
+    winLevel();
+    fixture.detectChanges();
+
+    const view: HTMLElement = fixture.nativeElement;
+    expect(view.textContent).toContain('Fortschritt wird gespeichert');
+    const result = http.expectOne({ method: 'POST', url: resultUrl });
+    expect(result.request.body).toEqual({ level: 1, score: 3200, won: true });
+    expect(result.request.headers.get('Authorization')).toBe('Bearer test-token');
+    result.flush(null, { status: 503, statusText: 'Unavailable' });
+    fixture.detectChanges();
+    expect(view.querySelector('button')?.textContent).toContain('Erneut speichern');
+    view.querySelector('button')!.click();
+    http.expectOne(resultUrl).flush(null, { status: 204, statusText: 'No Content' });
+    fixture.detectChanges();
+
+    expect(view.querySelector('button')?.textContent).toContain('Nächstes Level');
+    view.querySelector('button')!.click();
+    const nextUrl = url + '?number=2';
+    http.expectOne(nextUrl).flush(null, { status: 503, statusText: 'Unavailable' });
+    fixture.detectChanges();
+    view.querySelector('button')!.click();
+    http.expectOne(nextUrl).flush({ ...level, level: 2, hasNext: false });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(destroyGame).toHaveBeenCalledOnce();
+    expect(view.querySelector('dd')?.textContent).toBe('2');
+    winLevel();
+    http.expectOne(resultUrl).flush(null, { status: 204, statusText: 'No Content' });
+    fixture.detectChanges();
+    expect(view.querySelector('button')?.textContent).toContain('Level wiederholen');
+  });
+
+  it('starts at the saved level and shows the saved best score', async () => {
+    http.expectOne(url).flush({ ...level, level: 3, bestScore: 3600 });
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const view: HTMLElement = fixture.nativeElement;
+    expect(Array.from(view.querySelectorAll('dd'), (stat) => stat.textContent)).toEqual(['3', '0', '3', '32', '3600']);
   });
 });

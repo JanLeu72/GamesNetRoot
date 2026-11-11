@@ -5,6 +5,11 @@ export interface BrickBreakerLevel {
   rows: number;
   columns: number;
   lives: number;
+  layout?: string[];
+  ballSpeed?: number;
+  paddleWidth?: number;
+  hasNext?: boolean;
+  bestScore?: number;
 }
 
 export interface GameStatus {
@@ -18,7 +23,7 @@ export interface BrickBreakerGame {
   start(): void;
   pause(): void;
   movePaddle(x: number): void;
-  destroy(): void;
+  destroy(): void | Promise<void>;
 }
 
 type GameFactory = (

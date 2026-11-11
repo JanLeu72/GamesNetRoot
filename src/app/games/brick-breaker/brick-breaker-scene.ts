@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { addBall, addBlock, brickFinishes, drawArena, paddleFinish } from './brick-breaker-art';
 import { board, BrickBreakerGame, BrickBreakerLevel, GameStatus } from './brick-breaker-game';
 
 const paddle = { width: 124, height: 16, y: 544, speed: 540 };
@@ -6,9 +7,7 @@ const ballRadius = 8;
 const ballSpeed = 380;
 const brickHeight = 28;
 const brickGap = 9;
-const brickColors = [0xf472b6, 0xc084fc, 0x818cf8, 0x22d3ee];
-
-type StaticRectangle = Phaser.GameObjects.Rectangle & { body: Phaser.Physics.Arcade.StaticBody };
+type StaticBlock = Phaser.GameObjects.Image & { body: Phaser.Physics.Arcade.StaticBody };
 
 export function createBrickBreakerGame(
   canvas: HTMLCanvasElement,
@@ -21,7 +20,7 @@ export function createBrickBreakerGame(
     type: Phaser.CANVAS,
     canvas,
     ...board,
-    backgroundColor: '#080f23',
+    backgroundColor: '#212c65',
     banner: false,
     input: { keyboard: false, mouse: false, touch: false },
     audio: { noAudio: true },
@@ -33,15 +32,20 @@ export function createBrickBreakerGame(
     start: () => scene.start(),
     pause: () => scene.pause(),
     movePaddle: (x: number) => scene.movePaddle(x),
-    destroy: () => game.destroy(false),
+    destroy: () => new Promise<void>((resolve) => {
+      game.events.once(Phaser.Core.Events.DESTROY, () => resolve());
+      game.destroy(false);
+    }),
   };
 }
 
 class BrickBreakerScene extends Phaser.Scene {
   private readonly status: GameStatus;
-  private bricks!: StaticRectangle[];
-  private bat!: StaticRectangle;
+  private bricks!: StaticBlock[];
+  private bat!: StaticBlock;
   private ball!: Phaser.Physics.Arcade.Body;
+  private readonly paddleWidth: number;
+  private readonly speed: number;
 
   constructor(
     private readonly level: BrickBreakerLevel,
@@ -49,27 +53,31 @@ class BrickBreakerScene extends Phaser.Scene {
     private readonly onStatus: (status: GameStatus) => void,
   ) {
     super('brick-breaker');
-    this.status = { phase: 'ready', score: 0, lives: level.lives, remaining: level.rows * level.columns };
+    this.status = { phase: 'ready', score: 0, lives: level.lives, remaining: 0 };
+    this.paddleWidth = level.paddleWidth ?? paddle.width;
+    this.speed = level.ballSpeed ?? ballSpeed;
   }
 
   create(): void {
-    this.add.grid(board.width / 2, board.height / 2, board.width, board.height, 40, 40)
-      .setStrokeStyle(1, 0x172640, 0.8);
-    this.bat = this.addStaticRectangle(board.width / 2, paddle.y, paddle.width, paddle.height, 0x22d3ee);
+    drawArena(this);
+    this.bat = this.physics.add.existing(
+      addBlock(this, 'paddle', board.width / 2, paddle.y, this.paddleWidth, paddle.height, paddleFinish), true,
+    ) as StaticBlock;
     this.bricks = this.createBricks();
+    this.status.remaining = this.bricks.length;
 
-    const ball = this.add.circle(0, 0, ballRadius, 0xf0fdff).setStrokeStyle(1, 0x67e8f9);
+    const ball = addBall(this, ballRadius);
     this.physics.add.existing(ball);
     this.ball = (ball.body as Phaser.Physics.Arcade.Body)
       .setCircle(ballRadius).setBounce(1).setCollideWorldBounds(true);
 
     this.physics.world.setBoundsCollision(true, true, true, false);
     this.physics.add.collider(ball, this.bat, () => {
-      const offset = Phaser.Math.Clamp((this.ball.center.x - this.bat.x) / (paddle.width / 2), -1, 1);
+      const offset = Phaser.Math.Clamp((this.ball.center.x - this.bat.x) / (this.paddleWidth / 2), -1, 1);
       this.launchBall(offset * 1.05);
     }, () => this.ball.velocity.y > 0 && this.ball.prev.y + this.ball.height <= this.bat.body.top);
     this.physics.add.collider(ball, this.bricks, (_ball, brick) => {
-      this.hitBrick(brick as StaticRectangle);
+      this.hitBrick(brick as StaticBlock);
     }, () => this.status.phase === 'playing');
 
     this.physics.pause();
@@ -108,7 +116,7 @@ class BrickBreakerScene extends Phaser.Scene {
 
   movePaddle(x: number): void {
     if (!this.bat || (this.status.phase !== 'ready' && this.status.phase !== 'playing')) return;
-    const edge = paddle.width / 2;
+    const edge = this.paddleWidth / 2;
     const center = Phaser.Math.Clamp(x, edge, board.width - edge);
     if (center === this.bat.x) return;
     this.bat.setX(center);
@@ -116,25 +124,29 @@ class BrickBreakerScene extends Phaser.Scene {
     if (this.status.phase === 'ready') this.parkBall();
   }
 
-  private createBricks(): StaticRectangle[] {
+  private createBricks(): StaticBlock[] {
     const { rows, columns } = this.level;
-    const margin = 42;
-    const width = (board.width - margin * 2 - brickGap * (columns - 1)) / columns;
-    return Array.from({ length: rows * columns }, (_, index) => {
-      const row = Math.floor(index / columns);
-      const column = index % columns;
-      const x = margin + width / 2 + column * (width + brickGap);
-      const y = 77 + row * (brickHeight + brickGap);
-      return this.addStaticRectangle(x, y, width, brickHeight, brickColors[row % brickColors.length]);
-    });
+    const layout = this.level.layout ?? Array.from({ length: rows }, () => '#'.repeat(columns));
+    const fullWidth = (board.width - 84 - brickGap * (columns - 1)) / columns;
+    const hasEmptyCells = layout.some((row) => row.includes('.'));
+    const height = hasEmptyCells ? 32 : brickHeight;
+    const width = hasEmptyCells ? Math.min(fullWidth, height) : fullWidth;
+    const margin = (board.width - (columns * width + (columns - 1) * brickGap)) / 2;
+    const bricks: StaticBlock[] = [];
+    for (const [row, cells] of layout.entries()) {
+      const finish = row % brickFinishes.length;
+      for (let column = 0; column < cells.length; column++) {
+        if (cells[column] !== '#') continue;
+        const x = margin + width / 2 + column * (width + brickGap);
+        const y = 77 + row * (height + brickGap);
+        const brick = addBlock(this, `brick-${finish}`, x, y, width, height, brickFinishes[finish]);
+        bricks.push(this.physics.add.existing(brick, true) as StaticBlock);
+      }
+    }
+    return bricks;
   }
 
-  private addStaticRectangle(x: number, y: number, width: number, height: number, color: number) {
-    const rectangle = this.add.rectangle(x, y, width, height, color).setStrokeStyle(2, 0xffffff, 0.25);
-    return this.physics.add.existing(rectangle, true) as StaticRectangle;
-  }
-
-  private hitBrick(brick: StaticRectangle): void {
+  private hitBrick(brick: StaticBlock): void {
     brick.setVisible(false);
     brick.body.enable = false;
     this.status.score += 100;
@@ -165,7 +177,7 @@ class BrickBreakerScene extends Phaser.Scene {
   }
 
   private launchBall(angle: number): void {
-    this.ball.setVelocity(Math.sin(angle) * ballSpeed, -Math.cos(angle) * ballSpeed);
+    this.ball.setVelocity(Math.sin(angle) * this.speed, -Math.cos(angle) * this.speed);
   }
 
   private publishStatus(): void {
