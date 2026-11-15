@@ -1,0 +1,41 @@
+<section class="mx-auto mt-4 max-w-xl">
+  <h1 class="mb-4 text-2xl font-semibold">{{ 'settings.title' | translate }}</h1>
+
+  <kendo-tabstrip keepTabContent="loadOnDemand">
+    <kendo-tabstrip-tab [title]="'settings.playerName' | translate" [selected]="true">
+      <ng-template kendoTabContent>
+        @switch (profile.state().kind) {
+          @case ('loading') {
+            <p role="status">{{ 'settings.loading' | translate }}</p>
+          }
+          @case ('error') {
+            <p role="alert" class="mb-3 text-red-700">{{ 'settings.loadError' | translate }}</p>
+            <button kendoButton type="button" (click)="profile.retry()">{{ 'brick.retry' | translate }}</button>
+          }
+          @case ('ready') {
+            <app-player-name />
+          }
+        }
+      </ng-template>
+    </kendo-tabstrip-tab>
+    <kendo-tabstrip-tab [title]="'settings.passwordTab' | translate">
+      <ng-template kendoTabContent>
+        <app-change-password />
+      </ng-template>
+    </kendo-tabstrip-tab>
+    <kendo-tabstrip-tab [title]="'settings.language' | translate">
+      <ng-template kendoTabContent>
+        <label class="grid max-w-sm gap-1 font-medium">
+          {{ 'settings.language' | translate }}
+          <select #languageSelect class="rounded-md border border-slate-300 bg-white px-3 py-2"
+                  [value]="locale.language()" (change)="locale.select(languageSelect.value)">
+            <option value="de" lang="de">Deutsch</option>
+            <option value="en" lang="en">English</option>
+            <option value="es" lang="es">Español</option>
+            <option value="fr" lang="fr">Français</option>
+          </select>
+        </label>
+      </ng-template>
+    </kendo-tabstrip-tab>
+  </kendo-tabstrip>
+</section>

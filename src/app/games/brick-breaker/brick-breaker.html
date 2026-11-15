@@ -1,28 +1,28 @@
 <section class="mx-auto max-w-4xl">
-  <a routerLink="/" class="text-sm font-medium text-sky-800 underline underline-offset-4">← Alle Spiele</a>
+  <a routerLink="/" class="text-sm font-medium text-sky-800 underline underline-offset-4">← {{ 'brick.allGames' | translate }}</a>
   <header class="game-header mt-4 rounded-2xl px-5 py-5 sm:px-7">
     <p class="text-xs font-semibold tracking-widest text-indigo-700 uppercase">NetRoot Arcade</p>
     <h1 class="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Brick Breaker</h1>
-    <p class="mt-2 text-sm text-slate-700">Fang den Ball mit dem Schläger und räume alle Steine ab.</p>
+    <p class="mt-2 text-sm text-slate-700">Fang den Ball mit dem Schläger und räume alle {{ 'brick.bricks' | translate }} ab.</p>
   </header>
 
   @if (status(); as game) {
     <dl class="game-stats my-3 grid grid-cols-3 gap-2 text-center text-sm sm:grid-cols-5">
-      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">Level</dt><dd class="font-semibold">{{ level()?.level }}</dd></div>
-      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">Punkte</dt><dd class="font-semibold tabular-nums">{{ game.score }}</dd></div>
-      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">Leben</dt><dd class="font-semibold tabular-nums">{{ game.lives }}</dd></div>
-      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">Steine</dt><dd class="font-semibold tabular-nums">{{ game.remaining }}</dd></div>
-      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">Bestwert</dt><dd class="font-semibold tabular-nums">{{ bestScore() }}</dd></div>
+      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">{{ 'brick.level' | translate }}</dt><dd class="font-semibold">{{ level()?.level }}</dd></div>
+      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">{{ 'brick.score' | translate }}</dt><dd class="font-semibold tabular-nums">{{ game.score }}</dd></div>
+      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">{{ 'brick.lives' | translate }}</dt><dd class="font-semibold tabular-nums">{{ game.lives }}</dd></div>
+      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">{{ 'brick.bricks' | translate }}</dt><dd class="font-semibold tabular-nums">{{ game.remaining }}</dd></div>
+      <div class="rounded-lg bg-white p-2"><dt class="text-slate-600">{{ 'brick.best' | translate }}</dt><dd class="font-semibold tabular-nums">{{ bestScore() }}</dd></div>
     </dl>
   }
   @if (practice()) {
-    <p class="mt-3 text-sm text-slate-600">Übungsmodus. Dein Fortschritt wird hier nicht gespeichert.</p>
+    <p class="mt-3 text-sm text-slate-600">{{ 'brick.practice' | translate }}</p>
   }
 
   <div
     #surface
     role="region"
-    aria-label="Brick Breaker Spielfeld"
+    [attr.aria-label]="'brick.arena' | translate"
     aria-describedby="brick-breaker-controls"
     tabindex="0"
     class="game-arena relative mt-3 overflow-hidden rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
@@ -41,39 +41,39 @@
     @if (countdown(); as number) {
       <div class="pointer-events-none absolute inset-0 grid place-items-center">
         <span aria-hidden="true" class="game-countdown tabular-nums">{{ number }}</span>
-        <span class="sr-only" role="status">Ball startet in {{ number }} Sekunden.</span>
+        <span class="sr-only" role="status">{{ 'brick.countdown' | translate: { count: number } }}</span>
       </div>
     } @else if (loading() || error() || (status() && status()?.phase !== 'playing')) {
       <div class="pointer-events-none absolute inset-0 grid place-items-center bg-indigo-950/20 p-3 text-center">
         <div class="game-dialog max-w-sm rounded-2xl px-4 py-4 sm:px-7">
           @if (loading()) {
-            <p role="status" class="text-lg font-semibold">Level wird geladen …</p>
+            <p role="status" class="text-lg font-semibold">{{ 'brick.loading' | translate }}</p>
           } @else if (error() === 'level') {
-            <p role="alert" class="text-lg font-semibold">Das Level konnte nicht geladen werden.</p>
-            <button type="button" class="game-action pointer-events-auto mt-3" (click)="loadLevel()">Erneut versuchen</button>
+            <p role="alert" class="text-lg font-semibold">{{ 'brick.loadError' | translate }}</p>
+            <button type="button" class="game-action pointer-events-auto mt-3" (click)="loadLevel()">{{ 'brick.retry' | translate }}</button>
           } @else if (error() === 'graphics') {
-            <p role="alert" class="text-lg font-semibold">Das Spielfeld konnte nicht geöffnet werden.</p>
+            <p role="alert" class="text-lg font-semibold">{{ 'brick.graphicsError' | translate }}</p>
           } @else if (status(); as game) {
             <p role="status" class="text-xl font-semibold">
               @switch (game.phase) {
-                @case ('won') { {{ level()?.hasNext ? 'Level geschafft!' : 'Letztes Level geschafft!' }} }
-                @case ('lost') { Spiel vorbei }
-                @case ('paused') { Pause }
-                @default { {{ game.lives === level()?.lives ? 'Bereit für Level ' + level()?.level + '?' : 'Bereit für den nächsten Ball?' }} }
+                @case ('won') { {{ (level()?.hasNext ? 'brick.won' : 'brick.finished') | translate }} }
+                @case ('lost') { {{ 'brick.lost' | translate }} }
+                @case ('paused') { {{ 'brick.paused' | translate }} }
+                @default { {{ (game.lives === level()?.lives ? 'brick.ready' : 'brick.readyBall') | translate: { level: level()?.level } }} }
               }
             </p>
             @if (saveState() === 'saving') {
-              <p role="status" class="mt-3">Fortschritt wird gespeichert …</p>
+              <p role="status" class="mt-3">{{ 'brick.saving' | translate }}</p>
             } @else if (saveState() === 'failed') {
-              <p role="alert" class="mt-3">Der Fortschritt konnte nicht gespeichert werden.</p>
-              <button type="button" class="game-action pointer-events-auto mt-3" (click)="saveResult()">Erneut speichern</button>
+              <p role="alert" class="mt-3">{{ 'brick.saveError' | translate }}</p>
+              <button type="button" class="game-action pointer-events-auto mt-3" (click)="saveResult()">{{ 'brick.saveRetry' | translate }}</button>
             } @else {
               <button type="button" class="game-action pointer-events-auto mt-3" (click)="start()">
                 @switch (game.phase) {
-                  @case ('won') { {{ level()?.hasNext ? 'Nächstes Level' : 'Level wiederholen' }} }
-                  @case ('lost') { Noch einmal spielen }
-                  @case ('paused') { Weiterspielen }
-                  @default { Ball starten }
+                  @case ('won') { {{ (level()?.hasNext ? 'brick.next' : 'brick.repeat') | translate }} }
+                  @case ('lost') { {{ 'brick.again' | translate }} }
+                  @case ('paused') { {{ 'brick.resume' | translate }} }
+                  @default { {{ 'brick.start' | translate }} }
                 }
               </button>
             }
@@ -85,10 +85,10 @@
 
   <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
     <p id="brick-breaker-controls" class="text-sm text-slate-600">
-      Steuere den Schläger mit ←/→, A/D, der Maus oder per Wischen. Die Leertaste startet den Ball oder pausiert das Spiel.
+      {{ 'brick.controls' | translate }}
     </p>
     @if (status()?.phase === 'playing') {
-      <button type="button" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-100" (click)="pause()">Pausieren</button>
+      <button type="button" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-100" (click)="pause()">{{ 'brick.pause' | translate }}</button>
     }
   </div>
 </section>

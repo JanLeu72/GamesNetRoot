@@ -1,0 +1,37 @@
+<section class="catalog-page">
+  <header class="catalog-header">
+    <h1>NetRoot Games</h1>
+    <p>{{ 'home.intro' | translate }}</p>
+  </header>
+
+  @if (catalog(); as result) {
+    @if (result.state === 'ready') {
+      @if (result.data.length) {
+        <h2 class="section-title">{{ 'home.popular' | translate }}</h2>
+        <ul class="game-grid">
+          @for (game of result.data; track game.slug) {
+            <li class="game-card">
+              <a [routerLink]="['/games', game.slug, 'details']">
+                @if (game.coverImage) {
+                  <img class="game-cover" [src]="game.coverImage" alt="" width="1200" height="800" [loading]="$first ? 'eager' : 'lazy'" />
+                }
+                <div class="card-copy">
+                  <h3>{{ game.name }}</h3>
+                  @if (game.teaser) { <p>{{ game.teaser }}</p> }
+                  <span class="card-link">{{ 'home.view' | translate }} <span aria-hidden="true">→</span></span>
+                </div>
+              </a>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="notice">{{ 'home.empty' | translate }}</p>
+      }
+    } @else if (result.state === 'loading') {
+      <p class="notice" role="status">{{ 'home.loading' | translate }}</p>
+    } @else {
+      <p class="notice" role="alert">{{ 'home.loadError' | translate }}</p>
+      <button class="catalog-button" type="button" (click)="retry()">{{ 'brick.retry' | translate }}</button>
+    }
+  }
+</section>

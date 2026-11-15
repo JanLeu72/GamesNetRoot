@@ -1,0 +1,106 @@
+:host {
+  display: block;
+}
+
+.login-card {
+  box-sizing: border-box;
+  max-width: 28rem;
+  margin-inline: auto;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px #0f172a1a;
+}
+
+@media (min-width: 40rem) {
+  .login-card {
+    padding: 2rem;
+  }
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 2rem;
+}
+
+.login-intro,
+.login-error {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.login-intro {
+  margin-top: 0.5rem;
+  color: #475569;
+}
+
+.login-error {
+  color: #b91c1c;
+}
+
+form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+input,
+button {
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 0.375rem;
+  font: inherit;
+}
+
+input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #cbd5e1;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border: 0;
+  background: #0369a1;
+  color: #fff;
+  font-weight: 500;
+}
+
+button:hover:enabled {
+  background: #075985;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+}
+
+input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid #0284c7;
+  outline-offset: 2px;
+}
+
+.login-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 1.25rem;
+  font-size: 0.875rem;
+}
+
+.login-links a {
+  color: #075985;
+  text-decoration: underline;
+}

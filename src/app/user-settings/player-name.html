@@ -1,0 +1,19 @@
+<form class="grid max-w-sm gap-3" [formGroup]="form" (ngSubmit)="save()">
+  <div class="grid gap-1">
+    <label [for]="fieldId()" class="font-medium">{{ 'settings.playerName' | translate }}</label>
+    <kendo-textbox [focusableId]="fieldId()" formControlName="displayName" [maxlength]="32"
+                   [readonly]="pending()" [inputAttributes]="{ autocomplete: 'nickname', required: '' }" />
+  </div>
+  @if (form.controls.displayName.touched && form.controls.displayName.invalid) {
+    <p role="alert" class="text-sm text-red-700">{{ 'settings.nameInvalid' | translate }}</p>
+  }
+  @if (status() === 'failed') {
+    <p role="alert" class="text-sm text-red-700">{{ 'settings.nameError' | translate }}</p>
+  }
+  @if (showSaved() && status() === 'saved') {
+    <p role="status" class="text-sm text-green-700">{{ 'settings.nameSaved' | translate }}</p>
+  }
+  <button kendoButton class="justify-self-start" themeColor="primary" type="submit" [disabled]="pending()">
+    {{ (pending() ? 'settings.saving' : 'settings.saveName') | translate }}
+  </button>
+</form>

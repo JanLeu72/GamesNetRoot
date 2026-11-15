@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { catchError, finalize, map, Observable, of, shareReplay, tap, timeout } from 'rxjs';
+import { catchError, finalize, map, Observable, of, shareReplay, tap, throwError, timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 interface NetRootSession {
@@ -45,9 +45,9 @@ export class AuthenticationService {
     );
   }
 
-  login(credentials: { username: string; password: string }) {
+  login(credentials: { username: string; password: string }, language = 'de') {
     return this.http.post<NetRootSession>(environment.oauthServiceUrl + 'user/authenticate', credentials, {
-      params: { language: 'de' },
+      params: { language },
       withCredentials: true,
     }).pipe(
       map(session => this.setSession(session)),
@@ -63,6 +63,16 @@ export class AuthenticationService {
       timeout(5000),
       tap(() => this.invalidateSession()),
     );
+  }
+
+  changePassword(passwords: { currentPassword: string; password1: string; password2: string }) {
+    const session = this.activeSession();
+    if (!session) return throwError(() => new Error('No active session'));
+
+    return this.http.post<boolean>(environment.oauthServiceUrl + 'user/updatepassword', passwords, {
+      headers: { Authorization: 'Bearer ' + session.token },
+      timeout: 8000,
+    });
   }
 
   invalidateSession(): void {

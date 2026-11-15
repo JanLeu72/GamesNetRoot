@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { AuthenticationService } from '../../auth/authentication.service';
 import { board, BrickBreakerGame, BrickBreakerLevel, GameStatus, loadBrickBreakerGame } from './brick-breaker-game';
@@ -19,7 +20,7 @@ const leftKeys = ['arrowleft', 'a'];
 const rightKeys = ['arrowright', 'd'];
 
 @Component({
-  imports: [RouterLink],
+  imports: [RouterLink, TranslatePipe],
   selector: 'app-brick-breaker',
   styleUrl: './brick-breaker.css',
   templateUrl: './brick-breaker.html',

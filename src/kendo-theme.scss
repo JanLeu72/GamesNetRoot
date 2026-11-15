@@ -1,0 +1,11 @@
+@use '@progress/kendo-theme-default/scss/button' as button;
+@use '@progress/kendo-theme-default/scss/dialog' as dialog;
+@use '@progress/kendo-theme-default/scss/popup' as popup;
+@use '@progress/kendo-theme-default/scss/tabstrip' as tabstrip;
+@use '@progress/kendo-theme-default/scss/textbox' as textbox;
+
+@include button.kendo-button--styles();
+@include dialog.kendo-dialog--styles();
+@include popup.kendo-popup--styles();
+@include tabstrip.kendo-tabstrip--styles();
+@include textbox.kendo-textbox--styles();

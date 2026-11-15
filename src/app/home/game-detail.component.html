@@ -1,0 +1,63 @@
+<article class="catalog-page">
+  <a routerLink="/" class="back-link"><span aria-hidden="true">←</span> {{ 'brick.allGames' | translate }}</a>
+
+  @if (detail(); as result) {
+    @if (result.state === 'ready') {
+      @let game = result.data;
+      <header class="detail-header">
+        <div class="detail-copy">
+          <h1>{{ game.name }}</h1>
+          @if (game.teaser) { <p>{{ game.teaser }}</p> }
+          @if (playLink(); as link) {
+            <a class="catalog-button" [routerLink]="link">{{ 'home.play' | translate }} <span aria-hidden="true">→</span></a>
+          }
+        </div>
+        @if (game.coverImage) {
+          <img class="game-cover" [src]="game.coverImage" alt="" width="1200" height="800" />
+        }
+      </header>
+
+      <div class="detail-grid">
+        @if (game.description || game.screenshotImage) {
+          <section class="detail-panel">
+            <h2 class="section-title">{{ 'home.about' | translate }}</h2>
+            @if (game.description) { <p>{{ game.description }}</p> }
+            @if (game.screenshotImage) {
+              <img class="screenshot" [src]="game.screenshotImage" [alt]="'home.screenshotAlt' | translate: { game: game.name }" loading="lazy" />
+            }
+          </section>
+        }
+
+        <section class="detail-panel">
+          <h2 class="section-title">{{ 'home.leaderboard' | translate }}</h2>
+          @if (game.leaderboard.length) {
+            <ol class="leaderboard">
+              @for (entry of game.leaderboard; track entry.rank) {
+                <li>
+                  <div class="score-row">
+                    <span class="player-name">{{ entry.rank }}. {{ entry.playerName || ('home.anonymousPlayer' | translate) }}</span>
+                    <strong>{{ scoreFormat().format(entry.score) }} {{ 'home.points' | translate }}</strong>
+                  </div>
+                  @if (entry.achievedAt; as timestamp) {
+                    <time [attr.datetime]="timestamp">{{ formatRecordDate(timestamp) }}</time>
+                  } @else {
+                    <span class="record-date">{{ 'home.recordDateUnknown' | translate }}</span>
+                  }
+                </li>
+              }
+            </ol>
+          } @else {
+            <p>{{ 'home.leaderboardEmpty' | translate }}</p>
+          }
+        </section>
+      </div>
+    } @else if (result.state === 'loading') {
+      <p class="notice" role="status">{{ 'home.detailLoading' | translate }}</p>
+    } @else if (result.state === 'missing') {
+      <h1>{{ 'home.missing' | translate }}</h1>
+    } @else {
+      <p class="notice" role="alert">{{ 'home.detailError' | translate }}</p>
+      <button class="catalog-button" type="button" (click)="retry()">{{ 'brick.retry' | translate }}</button>
+    }
+  }
+</article>

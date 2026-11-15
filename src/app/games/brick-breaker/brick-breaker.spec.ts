@@ -5,6 +5,7 @@ import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 import { environment } from '../../../environments/environment';
 import { AuthenticationService } from '../../auth/authentication.service';
+import { testTranslationProviders } from '../../i18n/translation-testing';
 import { BrickBreaker } from './brick-breaker';
 import { BrickBreakerLevel, GameStatus, loadBrickBreakerGame } from './brick-breaker-game';
 
@@ -26,6 +27,7 @@ describe('BrickBreaker', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
+        testTranslationProviders,
         { provide: AuthenticationService, useValue: { activeSession: () => ({ token: 'test-token' }) } },
         {
           provide: loadBrickBreakerGame,

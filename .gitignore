@@ -6,6 +6,9 @@
 /out-tsc
 /bazel-out
 
+#Telerik license
+telerik-license.txt
+
 # Node
 /node_modules
 npm-debug.log

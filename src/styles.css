@@ -1,3 +1,16 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+@theme {
+  --color-amber: #ffbf00;
+  --color-primary: #1274AC;
+  --color-primary-hover: rgba(18,116,172,0.15);
+}
+
+:root {
+  --kendo-color-primary: #1274AC;
+  --kendo-color-primary-hover: #004b82;
+  --kendo-color-primary-active: #003d6b;
+  --kendo-color-on-primary: #ffffff;
+}
