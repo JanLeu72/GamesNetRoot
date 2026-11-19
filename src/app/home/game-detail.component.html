@@ -1,5 +1,5 @@
 <article class="catalog-page">
-  <a routerLink="/" class="back-link"><span aria-hidden="true">←</span> {{ 'brick.allGames' | translate }}</a>
+  <a [routerLink]="homePath" class="back-link"><span aria-hidden="true">←</span> {{ 'brick.allGames' | translate }}</a>
 
   @if (detail(); as result) {
     @if (result.state === 'ready') {
@@ -36,7 +36,7 @@
                 <li>
                   <div class="score-row">
                     <span class="player-name">{{ entry.rank }}. {{ entry.playerName || ('home.anonymousPlayer' | translate) }}</span>
-                    <strong>{{ scoreFormat().format(entry.score) }} {{ 'home.points' | translate }}</strong>
+                    <strong>{{ scoreFormat.format(entry.score) }} {{ 'home.points' | translate }}</strong>
                   </div>
                   @if (entry.achievedAt; as timestamp) {
                     <time [attr.datetime]="timestamp">{{ formatRecordDate(timestamp) }}</time>
@@ -52,7 +52,18 @@
         </section>
       </div>
     } @else if (result.state === 'loading') {
-      <p class="notice" role="status">{{ 'home.detailLoading' | translate }}</p>
+      @if (isBrickBreaker()) {
+        <header class="detail-header">
+          <div class="detail-copy">
+            <h1>Brick Breaker</h1>
+            <p>{{ 'seo.brickBreakerDescription' | translate }}</p>
+            <a class="catalog-button" [routerLink]="brickBreakerPath">{{ 'home.play' | translate }} <span aria-hidden="true">→</span></a>
+          </div>
+          <img class="game-cover" src="/images/games/brick-breaker-cover.jpg" alt="" width="1200" height="800" />
+        </header>
+      } @else {
+        <p class="notice" role="status">{{ 'home.detailLoading' | translate }}</p>
+      }
     } @else if (result.state === 'missing') {
       <h1>{{ 'home.missing' | translate }}</h1>
     } @else {

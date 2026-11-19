@@ -11,7 +11,7 @@
         <ul class="game-grid">
           @for (game of result.data; track game.slug) {
             <li class="game-card">
-              <a [routerLink]="['/games', game.slug, 'details']">
+              <a [routerLink]="detailsPath(game.slug)">
                 @if (game.coverImage) {
                   <img class="game-cover" [src]="game.coverImage" alt="" width="1200" height="800" [loading]="$first ? 'eager' : 'lazy'" />
                 }
@@ -28,7 +28,19 @@
         <p class="notice">{{ 'home.empty' | translate }}</p>
       }
     } @else if (result.state === 'loading') {
-      <p class="notice" role="status">{{ 'home.loading' | translate }}</p>
+      <h2 class="section-title">{{ 'home.popular' | translate }}</h2>
+      <ul class="game-grid">
+        <li class="game-card">
+          <a [routerLink]="detailsPath('brick-breaker')">
+            <img class="game-cover" src="/images/games/brick-breaker-cover.jpg" alt="" width="1200" height="800" />
+            <div class="card-copy">
+              <h3>Brick Breaker</h3>
+              <p>{{ 'brick.intro' | translate }}</p>
+              <span class="card-link">{{ 'home.view' | translate }} <span aria-hidden="true">→</span></span>
+            </div>
+          </a>
+        </li>
+      </ul>
     } @else {
       <p class="notice" role="alert">{{ 'home.loadError' | translate }}</p>
       <button class="catalog-button" type="button" (click)="retry()">{{ 'brick.retry' | translate }}</button>

@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { provideRouter, Router } from '@angular/router';
+import { provideRouter, RouteReuseStrategy, Router, TitleStrategy } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { SwUpdate, VersionEvent } from '@angular/service-worker';
 import { Subject } from 'rxjs';
@@ -12,6 +12,8 @@ import { App } from './app';
 import { routes } from './app.routes';
 import { AuthenticationService } from './auth/authentication.service';
 import { LanguageService } from './i18n/language.service';
+import { GameRouteReuse } from './i18n/game-route-reuse';
+import { GamesTitleStrategy } from './i18n/games-title.strategy';
 import { testTranslationProviders } from './i18n/translation-testing';
 
 describe('NetRoot Games authentication', () => {
@@ -34,6 +36,8 @@ describe('NetRoot Games authentication', () => {
       providers: [
         provideRouter(routes), provideHttpClient(), provideHttpClientTesting(), testTranslationProviders,
         provideNoopAnimations(),
+        { provide: RouteReuseStrategy, useClass: GameRouteReuse },
+        { provide: TitleStrategy, useClass: GamesTitleStrategy },
       ],
     });
   });
@@ -53,13 +57,13 @@ describe('NetRoot Games authentication', () => {
   }
 
   it('returns to the requested game and level after signing in', async () => {
-    const gameUrl = '/games/brick-breaker?level=4';
-    const pending = RouterTestingHarness.create(gameUrl);
+    const gameUrl = '/fr/games/brick-breaker?level=4';
+    const pending = RouterTestingHarness.create('/games/brick-breaker?level=4&lang=fr');
     await rejectSession();
     await rejectSession();
     const harness = await pending;
     const router = TestBed.inject(Router);
-    expect(router.url).toBe('/user/login?returnUrl=' + encodeURIComponent(gameUrl));
+    expect(router.url).toBe('/fr/user/login?returnUrl=' + encodeURIComponent(gameUrl));
 
     const form = harness.routeNativeElement!.querySelector('form')!;
     for (const [id, value] of [['username', 'spieler'], ['password', 'example']]) {
@@ -69,7 +73,9 @@ describe('NetRoot Games authentication', () => {
     }
     form.requestSubmit();
     form.requestSubmit();
-    const request = TestBed.inject(HttpTestingController).expectOne({ method: 'POST', url: loginUrl });
+    const request = TestBed.inject(HttpTestingController).expectOne({
+      method: 'POST', url: environment.oauthServiceUrl + 'user/authenticate?language=fr',
+    });
     expect(request.request.withCredentials).toBe(true);
     expect(request.request.body).toEqual({ username: 'spieler', password: 'example' });
 
@@ -84,6 +90,12 @@ describe('NetRoot Games authentication', () => {
     expect(level.request.headers.get('Authorization')).toBe('Bearer ' + auth.token);
     level.flush(null, { status: 503, statusText: 'Unavailable' });
     expect(localStorage.getItem(storageKey)).toBeNull();
+
+    const gameView = harness.routeNativeElement;
+    await TestBed.inject(LanguageService).select('es');
+    expect(router.url).toBe('/es/games/brick-breaker?level=4');
+    expect(harness.routeNativeElement).toBe(gameView);
+    expect(document.documentElement.lang).toBe('es');
   });
 
   it('restores a valid session on a direct visit and clears it on logout', async () => {
@@ -115,7 +127,7 @@ describe('NetRoot Games authentication', () => {
     expect(page.textContent).toContain('Spielername42');
     expect(page.querySelector('kendo-dialog')).toBeNull();
     const menuButton = page.querySelector<HTMLButtonElement>('header button[aria-expanded]')!;
-    expect(page.querySelector('header select')).toBeNull();
+    expect(page.querySelector<HTMLSelectElement>('header select')?.value).toBe('de');
     expect(page.querySelector('header kendo-popup')).toBeNull();
     menuButton.click();
     await fixture.whenStable();
@@ -227,9 +239,9 @@ describe('NetRoot Games authentication', () => {
     select.value = 'es';
     select.dispatchEvent(new Event('change', { bubbles: true }));
     await fixture.whenStable();
-    expect(select.parentElement?.textContent).toContain('Idioma');
+    expect(page.querySelector('app-user-settings h1')?.textContent).toContain('Ajustes');
+    expect(router.url).toBe('/es/user/settings');
     expect(document.documentElement.lang).toBe('es');
-    expect(localStorage.getItem('netroot.games.language')).toBe('es');
   });
 
   it('offers a reload only once a new version is ready', async () => {
@@ -253,37 +265,22 @@ describe('NetRoot Games authentication', () => {
     expect(page.querySelector('button')?.textContent).toContain('Jetzt neu laden');
   });
 
-  it('applies the incoming locale without a language picker in the header', async () => {
-    localStorage.removeItem('netroot.games.language');
-    history.replaceState(null, '', '/?lang=fr');
-    try {
-      const fixture = TestBed.createComponent(App);
-      await fixture.whenStable();
-      expect(fixture.nativeElement.querySelector('header select')).toBeNull();
-      expect(document.documentElement.lang).toBe('fr');
-    } finally {
-      history.replaceState(null, '', '/');
-    }
-  });
+  it('uses the URL prefix and switches via the header while keeping query parameters and fragments', async () => {
+    const fixture = TestBed.createComponent(App);
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/fr/games/not-a-game?lang=en&source=arcade#info');
+    await fixture.whenStable();
+    expect(router.url).toBe('/fr/games/not-a-game?source=arcade#info');
+    expect(document.documentElement.lang).toBe('fr');
 
-  it('prefers the saved language to the launch link', () => {
-    history.replaceState(null, '', '/?lang=fr');
-    try {
-      expect(TestBed.inject(LanguageService).language()).toBe('de');
-    } finally {
-      history.replaceState(null, '', '/');
-    }
-  });
+    const select = fixture.nativeElement.querySelector('header select') as HTMLSelectElement;
+    expect(select.value).toBe('fr');
+    select.value = 'en';
+    select.dispatchEvent(new Event('change'));
+    await fixture.whenStable();
 
-  it('uses the first supported browser language without a saved or incoming locale', () => {
-    localStorage.removeItem('netroot.games.language');
-    const browserLanguages = vi.spyOn(navigator, 'languages', 'get')
-      .mockReturnValue(['it-CH', 'fr-CH', 'en']);
-    try {
-      expect(TestBed.inject(LanguageService).language()).toBe('fr');
-    } finally {
-      browserLanguages.mockRestore();
-    }
+    expect(router.url).toBe('/en/games/not-a-game?source=arcade#info');
+    expect(document.documentElement.lang).toBe('en');
   });
 
   it('shows a public catalog in API order and opens the translated details for a game', async () => {
@@ -307,7 +304,9 @@ describe('NetRoot Games authentication', () => {
     const titles = harness.routeNativeElement?.querySelectorAll('.game-card h3') ?? [];
     expect(Array.from(titles, title => title.textContent)).toEqual(['Brick Breaker', 'Another game']);
 
-    TestBed.inject(LanguageService).select('fr');
+    const french = TestBed.inject(LanguageService).select('fr');
+    await rejectSession();
+    await french;
     await vi.waitFor(() => {
       http.expectOne(catalog + 'fr').flush([{ ...brick, teaser: 'Texte français' }, second]);
     });
@@ -315,7 +314,7 @@ describe('NetRoot Games authentication', () => {
     expect(harness.routeNativeElement?.textContent).toContain('Texte français');
 
     const card = harness.routeNativeElement!.querySelector('.game-card a')!;
-    expect(card.getAttribute('href')).toBe('/games/brick-breaker/details');
+    expect(card.getAttribute('href')).toBe('/fr/games/brick-breaker/details');
     const details = router.navigateByUrl(card.getAttribute('href')!);
     await rejectSession();
     await details;
@@ -331,6 +330,6 @@ describe('NetRoot Games authentication', () => {
     expect(harness.routeNativeElement?.querySelector('.leaderboard')?.textContent).toContain('Arcade42');
     expect(harness.routeNativeElement?.querySelector('time')?.textContent).toContain('14:34');
     expect(harness.routeNativeElement?.querySelector('a.catalog-button')?.getAttribute('href'))
-      .toBe('/games/brick-breaker?level=4');
+      .toBe('/fr/games/brick-breaker?level=4');
   });
 });

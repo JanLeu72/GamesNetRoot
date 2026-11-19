@@ -41,7 +41,7 @@ export class LoginComponent {
     ).subscribe({
       next: () => {
         this.form.reset();
-        void this.router.navigateByUrl(gameReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl')), {
+        void this.router.navigateByUrl(gameReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'), this.locale.language()), {
           replaceUrl: true,
         });
       },

@@ -1,4 +1,10 @@
 {
+  "seo": {
+    "homeTitle": "Online Arcade Games and Leaderboards",
+    "homeDescription": "Discover browser games like Brick Breaker and compare your high scores on NetRoot Games.",
+    "brickBreakerTitle": "Play Brick Breaker Online",
+    "brickBreakerDescription": "Play Brick Breaker in your browser. Use the paddle to keep the ball in play, clear the bricks and try to beat your high score."
+  },
   "header": {
     "accountMenu": "Account menu",
     "logout": "Sign out",

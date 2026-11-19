@@ -1,6 +1,15 @@
 <header class="border-b border-slate-200 bg-white">
-  <nav class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-    <a routerLink="/" class="shrink-0 font-semibold" (click)="menuOpen.set(false)">NetRoot Games</a>
+  <nav class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-4 sm:px-6">
+    <a [routerLink]="locale.url('/')" class="shrink-0 font-semibold" (click)="menuOpen.set(false)">NetRoot Games</a>
+
+    <select #languageSelect class="rounded-md border border-slate-300 bg-white px-2 py-2 text-sm"
+            [attr.aria-label]="'settings.language' | translate"
+            [value]="locale.language()" (change)="locale.select(languageSelect.value)">
+      <option value="de" lang="de" [attr.selected]="locale.language() === 'de' ? '' : null">Deutsch</option>
+      <option value="en" lang="en" [attr.selected]="locale.language() === 'en' ? '' : null">English</option>
+      <option value="es" lang="es" [attr.selected]="locale.language() === 'es' ? '' : null">Español</option>
+      <option value="fr" lang="fr" [attr.selected]="locale.language() === 'fr' ? '' : null">Français</option>
+    </select>
 
     @if (currentUser(); as user) {
       @let player = profile();
@@ -24,7 +33,7 @@
                          [popupAlign]="{ horizontal: 'right', vertical: 'top' }"
                          [margin]="{ horizontal: 0, vertical: 6 }">
               <div #accountPanel id="games-account-panel" class="grid min-w-40 max-w-[calc(100vw-2rem)] gap-1 p-2">
-                <a routerLink="/user/settings"
+                <a [routerLink]="locale.url('/user/settings')"
                    class="rounded px-3 py-2 text-sm hover:bg-slate-100 focus-visible:outline-2"
                    (click)="menuOpen.set(false)">
                   {{ 'settings.title' | translate }}
@@ -38,7 +47,7 @@
         }
       </div>
     } @else {
-      <a routerLink="/user/login" class="shrink-0 rounded-md border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100">
+      <a [routerLink]="locale.url('/user/login')" class="shrink-0 rounded-md border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100">
         {{ 'login.submit' | translate }}
       </a>
     }

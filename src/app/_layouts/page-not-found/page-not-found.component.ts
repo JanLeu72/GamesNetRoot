@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { LanguageService } from '../../i18n/language.service';
 
 @Component({
   selector: 'app-page-not-found',
@@ -9,4 +10,6 @@ import { TranslatePipe } from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './page-not-found.component.css',
 })
-export class PageNotFoundComponent {}
+export class PageNotFoundComponent {
+  protected readonly locale = inject(LanguageService);
+}

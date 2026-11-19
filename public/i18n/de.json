@@ -1,4 +1,10 @@
 {
+  "seo": {
+    "homeTitle": "Online-Spiele und Bestenlisten",
+    "homeDescription": "Entdecke Online-Spiele wie Brick Breaker und vergleiche deine Bestwerte auf NetRoot Games.",
+    "brickBreakerTitle": "Brick Breaker online spielen",
+    "brickBreakerDescription": "Spiele Brick Breaker im Browser. Lenke den Ball mit dem Schläger, räume die Steine ab und versuche, deinen Bestwert zu schlagen."
+  },
   "header": {
     "accountMenu": "Kontomenü",
     "logout": "Abmelden",

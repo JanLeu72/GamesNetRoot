@@ -1,4 +1,10 @@
 {
+  "seo": {
+    "homeTitle": "Jeux d’arcade en ligne et classements",
+    "homeDescription": "Découvrez des jeux de navigateur comme Brick Breaker et comparez vos scores sur NetRoot Games.",
+    "brickBreakerTitle": "Jouer à Brick Breaker en ligne",
+    "brickBreakerDescription": "Jouez à Brick Breaker dans votre navigateur. Renvoyez la balle avec la raquette, cassez les briques et tentez de battre votre record."
+  },
   "header": {
     "accountMenu": "Menu du compte",
     "logout": "Se déconnecter",

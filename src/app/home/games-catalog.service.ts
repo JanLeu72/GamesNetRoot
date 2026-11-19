@@ -1,5 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { catchError, map, Observable, of, startWith } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -24,6 +25,7 @@ type CatalogResult<T> =
 @Injectable({ providedIn: 'root' })
 export class GamesCatalogService {
   private readonly http = inject(HttpClient);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private readonly url = environment.netRootApi + 'games';
 
   list(lang: string) {
@@ -35,6 +37,7 @@ export class GamesCatalogService {
   }
 
   private load<T>(url: string, lang: string): Observable<CatalogResult<T>> {
+    if (!this.isBrowser) return of({ state: 'loading' });
     return this.http.get<T>(url, { params: { lang }, timeout: 8000 }).pipe(
       map((data): CatalogResult<T> => ({ state: 'ready', data })),
       catchError((error: HttpErrorResponse) =>

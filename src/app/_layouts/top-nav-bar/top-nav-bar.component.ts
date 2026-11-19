@@ -6,6 +6,7 @@ import { ButtonComponent } from '@progress/kendo-angular-buttons';
 import { PopupComponent } from '@progress/kendo-angular-popup';
 import { finalize } from 'rxjs';
 import { AuthenticationService } from '../../auth/authentication.service';
+import { LanguageService } from '../../i18n/language.service';
 import { PlayerProfileService } from '../../user-settings/player-profile.service';
 
 @Component({
@@ -26,6 +27,7 @@ export class TopNavBarComponent {
   private readonly accountPanel = viewChild<ElementRef<HTMLElement>>('accountPanel');
   protected readonly currentUser = this.auth.currentUser;
   protected readonly profile = inject(PlayerProfileService).state;
+  protected readonly locale = inject(LanguageService);
   protected readonly menuOpen = signal(false);
   protected readonly signingOut = signal(false);
   protected readonly logoutError = signal(false);
@@ -54,7 +56,7 @@ export class TopNavBarComponent {
     ).subscribe({
       next: () => {
         this.menuOpen.set(false);
-        void this.router.navigateByUrl('/logged-out', { replaceUrl: true });
+        void this.router.navigateByUrl(this.locale.url('/logged-out'), { replaceUrl: true });
       },
       error: () => this.logoutError.set(true),
     });

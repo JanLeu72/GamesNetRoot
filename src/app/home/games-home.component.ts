@@ -2,8 +2,9 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { combineLatest, switchMap } from 'rxjs';
-import { LanguageService } from '../i18n/language.service';
+import { switchMap } from 'rxjs';
+import { injectRouteLanguage } from '../i18n/language.service';
+import { localizedUrl } from '../i18n/localized-url';
 import { GamesCatalogService } from './games-catalog.service';
 
 @Component({
@@ -15,11 +16,15 @@ import { GamesCatalogService } from './games-catalog.service';
 })
 export class GamesHomeComponent {
   private readonly games = inject(GamesCatalogService);
+  private readonly language = injectRouteLanguage();
   private readonly reload = signal(0);
-  protected readonly catalog = toSignal(combineLatest([
-    toObservable(inject(LanguageService).language),
-    toObservable(this.reload),
-  ]).pipe(switchMap(([language]) => this.games.list(language))));
+  protected readonly catalog = toSignal(toObservable(this.reload).pipe(
+    switchMap(() => this.games.list(this.language)),
+  ));
+
+  protected detailsPath(slug: string): string[] {
+    return [localizedUrl('/games', this.language), slug, 'details'];
+  }
 
   protected retry(): void {
     this.reload.update(attempt => attempt + 1);

@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { LanguageService } from '../../i18n/language.service';
 
 @Component({
   selector: 'app-logged-out',
@@ -8,4 +9,6 @@ import { TranslatePipe } from '@ngx-translate/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, TranslatePipe],
 })
-export class LoggedOutComponent {}
+export class LoggedOutComponent {
+  protected readonly locale = inject(LanguageService);
+}

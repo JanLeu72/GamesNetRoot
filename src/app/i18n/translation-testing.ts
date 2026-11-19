@@ -4,7 +4,7 @@ import de from '../../../public/i18n/de.json';
 import en from '../../../public/i18n/en.json';
 import es from '../../../public/i18n/es.json';
 import fr from '../../../public/i18n/fr.json';
-import { DEFAULT_LANGUAGE } from './language.service';
+import { DEFAULT_LANGUAGE } from './localized-url';
 
 const translations = new Map([['de', de], ['en', en], ['es', es], ['fr', fr]]);
 

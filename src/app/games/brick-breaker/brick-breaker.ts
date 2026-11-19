@@ -14,6 +14,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { AuthenticationService } from '../../auth/authentication.service';
+import { LanguageService } from '../../i18n/language.service';
 import { board, BrickBreakerGame, BrickBreakerLevel, GameStatus, loadBrickBreakerGame } from './brick-breaker-game';
 
 const leftKeys = ['arrowleft', 'a'];
@@ -30,6 +31,7 @@ export class BrickBreaker {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthenticationService);
   private readonly router = inject(Router);
+  protected readonly locale = inject(LanguageService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly zone = inject(NgZone);
@@ -66,11 +68,18 @@ export class BrickBreaker {
     });
   }
 
+  private redirectToLogin(): void {
+    const target = this.router.createUrlTree([this.locale.url('/user/login')], {
+      queryParams: { returnUrl: this.router.url },
+    });
+    void this.router.navigateByUrl(target, { replaceUrl: true });
+  }
+
   protected loadLevel(number = this.requestedLevel): void {
     if (this.loading()) return;
     const session = this.auth.activeSession();
     if (!session) {
-      void this.router.navigateByUrl('/user/login', { replaceUrl: true });
+      this.redirectToLogin();
       return;
     }
 
@@ -88,7 +97,7 @@ export class BrickBreaker {
         this.loading.set(false);
         if (response.status === 401) {
           this.auth.invalidateSession();
-          void this.router.navigateByUrl('/user/login', { replaceUrl: true });
+          this.redirectToLogin();
         } else {
           this.error.set('level');
         }
@@ -151,7 +160,7 @@ export class BrickBreaker {
     if (!level || !status || this.practice() || this.saveState() === 'saving'
         || (status.phase !== 'won' && status.phase !== 'lost')) return;
     if (!session) {
-      void this.router.navigateByUrl('/user/login', { replaceUrl: true });
+      this.redirectToLogin();
       return;
     }
 
@@ -172,7 +181,7 @@ export class BrickBreaker {
         this.saveState.set('failed');
         if (response.status === 401) {
           this.auth.invalidateSession();
-          void this.router.navigateByUrl('/user/login', { replaceUrl: true });
+          this.redirectToLogin();
         }
       },
     });

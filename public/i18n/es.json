@@ -1,4 +1,10 @@
 {
+  "seo": {
+    "homeTitle": "Juegos arcade en línea y clasificaciones",
+    "homeDescription": "Descubre juegos de navegador como Brick Breaker y compara tus puntuaciones en NetRoot Games.",
+    "brickBreakerTitle": "Juega a Brick Breaker en línea",
+    "brickBreakerDescription": "Juega a Brick Breaker en tu navegador. Mueve la pala para mantener la bola en juego, rompe los ladrillos e intenta superar tu récord."
+  },
   "header": {
     "accountMenu": "Menú de la cuenta",
     "logout": "Cerrar sesión",
