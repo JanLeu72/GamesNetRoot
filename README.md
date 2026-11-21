@@ -37,6 +37,10 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
+### IIS deployment
+
+Publish the complete contents of `dist/games/browser`, including `web.config` and all subdirectories, to the IIS site root. The playable Brick Breaker route loads `index.csr.html` so Angular can apply the chosen language and restore the session. The localized `/games/brick-breaker/details` pages use their generated `index.html` files.
+
 ## Running unit tests
 
 To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:

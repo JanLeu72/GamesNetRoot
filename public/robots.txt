@@ -1,4 +1,4 @@
-User-agent: *
+ng User-agent: *
 Allow: /
 
 Sitemap: https://games.netroot.ch/sitemap.xml
